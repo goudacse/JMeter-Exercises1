@@ -4,6 +4,10 @@ pipeline {
     tools {
         ant 'Ant 1.10'   // Install Ant in Jenkins Global Tools
     }
+     environment {
+        JMETER_HOME = 'D:\\JMeter\\apache-jmeter-5.6.3'  // set your JMeter path
+    }
+
 
     stages {
         stage('Checkout') {
