@@ -3,7 +3,7 @@
     <!-- ========================================================= -->
     <!-- PATHS - Update according to your JMeter installation     -->
     <!-- ========================================================= -->
-    <property name="jmeter.home" location="D:/JMeter/apache-jmeter-5.6.3"/>
+    <property name="jmeter.home" location="D:\JMeter\apache-jmeter-5.6.3\apache-jmeter-5.6.3"/>
     <property name="test.dir" location="tests"/> <!-- folder containing your .jmx files -->
     <property name="results.dir" location="build/results"/>
     <property name="report.dir" location="build/jmeter-html-report"/>
