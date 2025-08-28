@@ -1,44 +1,69 @@
-<project name="JMeter-Ant-Parallel" default="report" basedir=".">
-    <!-- JMeter installation path -->
-    <property name="jmeter.home" value="/opt/apache-jmeter" />
-    <property name="jmeter.bin" value="D:\\JMeter\\apache-jmeter-5.6.3\\apache-jmeter-5.6.3\\bin" />
-    <property name="jmeter.results.dir" value="build/jmeter-results" />
-    <property name="jmeter.report.dir" value="build/jmeter-html-report" />
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="JMeter-Parallel-Tests" default="report" basedir=".">
+    <!-- ========================================================= -->
+    <!-- PATHS - Update according to your JMeter installation     -->
+    <!-- ========================================================= -->
+    <property name="jmeter.home" location="D:/JMeter/apache-jmeter-5.6.3"/>
+    <property name="test.dir" location="tests"/> <!-- folder containing your .jmx files -->
+    <property name="results.dir" location="build/results"/>
+    <property name="report.dir" location="build/jmeter-html-report"/>
 
-    <!-- JMeter jars -->
-    <path id="jmeter.classpath">
-        <fileset dir="D:\\JMeter\\apache-jmeter-5.6.3\\apache-jmeter-5.6.3\\lib" includes="**/*.jar"/>
-        <fileset dir="D:\\JMeter\\apache-jmeter-5.6.3\\apache-jmeter-5.6.3\\lib\\ext" includes="**/*.jar"/>
-    </path>
+    <!-- ========================================================= -->
+    <!-- Define JMeter task for Ant -->
+    <!-- ========================================================= -->
+    <taskdef name="jmeter" classname="org.apache.jorphan.ant.JMeterTask">
+        <classpath>
+            <pathelement location="${jmeter.home}/lib/jorphan.jar"/>
+            <pathelement location="${jmeter.home}/lib/ApacheJMeter_core.jar"/>
+            <pathelement location="${jmeter.home}/lib/ApacheJMeter_components.jar"/>
+            <pathelement location="${jmeter.home}/lib/ApacheJMeter_http.jar"/>
+            <!-- Add more jars if your JMX uses other samplers/plugins -->
+        </classpath>
+    </taskdef>
 
-    <taskdef name="jmeter" 
-             classname="org.apache.jorphan.ant.JMeterTask" 
-             classpathref="jmeter.classpath" />
-
-    <!-- Prepare folders -->
-    <target name="init">
-        <mkdir dir="${jmeter.results.dir}" />
-        <mkdir dir="${jmeter.report.dir}" />
+    <!-- ========================================================= -->
+    <!-- Create directories -->
+    <!-- ========================================================= -->
+    <target name="clean">
+        <delete dir="build"/>
     </target>
 
-    <!-- Run all JMX files in parallel -->
-    <target name="run-tests" depends="init">
-        <parallel threadCount="4" failonany="true">
-            <fileset dir="Test Plans" includes="*.jmx">
-                <sequential>
-                    <jmeter testplan="@{filename}"
-                            resultlog="${jmeter.results.dir}/@{basename}.jtl" />
-                </sequential>
-            </fileset>
-        </parallel>
+    <target name="prepare">
+        <mkdir dir="${results.dir}"/>
+        <mkdir dir="${report.dir}"/>
     </target>
 
-    <!-- Generate consolidated report -->
+    <!-- ========================================================= -->
+    <!-- Run JMeter tests in parallel -->
+    <!-- ========================================================= -->
+    <target name="run-tests" depends="prepare">
+        <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+        <path id="jmx.files">
+            <fileset dir="${test.dir}" includes="*.jmx"/>
+        </path>
+
+        <!-- Use ant-contrib foreach for parallel execution -->
+        <foreach target="run-single-test" param="jmxfile" parallel="true">
+            <path>
+                <fileset dir="${test.dir}" includes="*.jmx"/>
+            </path>
+        </foreach>
+    </target>
+
+    <!-- Run single JMeter test -->
+    <target name="run-single-test">
+        <jmeter jmeterhome="${jmeter.home}"
+                testplan="${test.dir}/${jmxfile}"
+                resultlog="${results.dir}/${jmxfile}.jtl"/>
+    </target>
+
+    <!-- ========================================================= -->
+    <!-- Generate HTML report -->
+    <!-- ========================================================= -->
     <target name="report" depends="run-tests">
-        <java classname="org.apache.jmeter.report.dashboard.ReportGenerator" fork="true">
-            <classpath refid="jmeter.classpath" />
-            <arg line="-o ${jmeter.report.dir}" />
-            <arg line="-g ${jmeter.results.dir}/*.jtl" />
-        </java>
+        <jmeter jmeterhome="${jmeter.home}"
+                reportgenerator="true"
+                resultlog="${results.dir}/*.jtl"
+                reportoutput="${report.dir}"/>
     </target>
 </project>
