@@ -3,7 +3,6 @@ pipeline {
 
     tools {
         maven 'Maven 3.9.11'
-        jdk 'jdk-21'
         ant 'Ant-1.10'
     }
 
