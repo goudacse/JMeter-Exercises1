@@ -45,6 +45,9 @@ pipeline {
                     reportDir: 'results/combined-report',
                     reportFiles: 'index.html',
                     reportName: 'JMeter Combined Report'
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true,
+                    allowMissing: false
                 ])
             }
         }
