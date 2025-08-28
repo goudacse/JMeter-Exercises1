@@ -1,9 +1,8 @@
-pipeline {
+  pipeline {
     agent any
 
     environment {
-        JMETER_HOME = 'D:\\JMeter\\apache-jmeter-5.6.3' // Update your JMeter path
-        TEST_DIR = 'jmeter-tests'
+        JMETER_HOME = 'D:\\JMeter\\apache-jmeter-5.6.3' // Update JMeter path
         REPORT_DIR = 'jmeter-report'
     }
 
@@ -17,8 +16,6 @@ pipeline {
         stage('Run JMeter Tests in Parallel') {
             steps {
                 bat 'ant -f build.xml run-all'
-                // Wait for all tests to finish (optional: adjust based on test duration)
-                bat 'timeout /t 10 > nul'
             }
         }
 
@@ -45,14 +42,14 @@ pipeline {
 
         stage('Publish HTML Reports') {
             steps {
-                // Publish combined report
+                // Combined report
                 publishHTML(target: [
                     reportDir: '%REPORT_DIR%/html/combined',
                     reportFiles: 'index.html',
                     reportName: 'Combined JMeter Report'
                 ])
 
-                // Publish individual reports
+                // Individual reports
                 script {
                     def htmlFolders = findFiles(glob: "${env.REPORT_DIR}/html/*/index.html")
                     for (file in htmlFolders) {
