@@ -2,49 +2,29 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.9.11'
-        ant 'Ant-1.10'
-    }
-
-    environment {
-        PATH = "$PATH:${tool 'Maven 3.9.11'}/bin:${tool 'Ant-1.10'}/bin"
+        ant 'Ant 1.10'   // Install Ant in Jenkins Global Tools
+        jdk 'Java 11'   // JMeter needs Java
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/goudacse/JMeter-Exercises1.git'
+                git 'https://github.com/goudacse/JMeter-Exercises1.git'
             }
         }
 
-        stage('Maven Run (Sequential)') {
+        stage('Run JMeter Parallel Tests') {
             steps {
-                sh 'mvn clean verify'
+                sh "ant -f build.xml report"
             }
         }
 
-        stage('Ant Run (Parallel)') {
-            steps {
-                sh 'ant run'
-            }
-        }
-
-        stage('Merge Results') {
-            steps {
-                sh '''
-                mkdir -p results/merged
-                cat results/*.jtl > results/merged/merged.jtl
-                ant report
-                '''
-            }
-        }
-
-        stage('Publish Report') {
+        stage('Publish HTML Report') {
             steps {
                 publishHTML([
-                    reportDir: 'results/combined-report',
+                    reportDir: 'build/jmeter-html-report',
                     reportFiles: 'index.html',
-                    reportName: 'JMeter Combined Report',
+                    reportName: 'JMeter Parallel Test Report',
                     keepAll: true,
                     alwaysLinkToLastBuild: true,
                     allowMissing: false
@@ -55,7 +35,6 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'results/**/*.jtl', allowEmptyArchive: true
             cleanWs()
         }
     }
