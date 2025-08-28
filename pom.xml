@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.goudacse</groupId>
+    <artifactId>jmeter-exercises</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.lazerycode.jmeter</groupId>
+                <artifactId>jmeter-maven-plugin</artifactId>
+                <version>3.8.0</version>
+                <executions>
+                    <!-- Step 1: generate config.json -->
+                    <execution>
+                        <id>configuration</id>
+                        <goals>
+                            <goal>configure</goal>
+                        </goals>
+                    </execution>
+                    <!-- Step 2: run JMeter tests -->
+                    <execution>
+                        <id>jmeter-tests</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jmeter</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- Path to your JMX test scripts -->
+                    <testFilesDirectory>${project.basedir}/Test Plans</testFilesDirectory>
+                    <testFilesIncluded>
+                        <jMeterTestFile>*.jmx</jMeterTestFile>
+                    </testFilesIncluded>
+
+                    <!-- Results and reporting -->
+                    <resultsDirectory>${project.build.directory}/jmeter/results</resultsDirectory>
+                    <generateReports>true</generateReports>
+                    <resultsFileFormat>csv</resultsFileFormat>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
