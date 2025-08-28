@@ -1,56 +1,44 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="JMeterParallelRun" default="report" basedir=".">
+<project name="JMeter-Ant-Parallel" default="report" basedir=".">
+    <!-- JMeter installation path -->
+    <property name="jmeter.home" value="/opt/apache-jmeter" />
+    <property name="jmeter.bin" value="${jmeter.home}/bin" />
+    <property name="jmeter.results.dir" value="build/jmeter-results" />
+    <property name="jmeter.report.dir" value="build/jmeter-html-report" />
 
-    <!-- Path to JMeter installation -->
-    <property name="jmeter.home" value="${env.JMETER_HOME}" />
-    <property name="testplan.dir" value="Test Plans" />
-    <property name="results.dir" value="build/results" />
-    <property name="report.dir" value="build/jmeter-html-report" />
+    <!-- JMeter jars -->
+    <path id="jmeter.classpath">
+        <fileset dir="${jmeter.home}/lib" includes="**/*.jar"/>
+        <fileset dir="${jmeter.home}/lib/ext" includes="**/*.jar"/>
+    </path>
 
-    <!-- Clean previous results -->
-    <target name="clean">
-        <delete dir="${results.dir}" />
-        <delete dir="${report.dir}" />
+    <taskdef name="jmeter" 
+             classname="org.apache.jorphan.ant.JMeterTask" 
+             classpathref="jmeter.classpath" />
+
+    <!-- Prepare folders -->
+    <target name="init">
+        <mkdir dir="${jmeter.results.dir}" />
+        <mkdir dir="${jmeter.report.dir}" />
     </target>
 
-    <!-- Run all JMX files in parallel dynamically -->
-    <target name="run-tests" depends="clean">
-        <mkdir dir="${results.dir}" />
-
-        <!-- Fileset to select all JMX files -->
-        <fileset id="jmx.files" dir="${testplan.dir}" includes="*.jmx" />
-
-        <!-- Parallel execution -->
-        <parallel threadCount="4" timeout="0">
-            <foreach target="run-single" param="file">
-                <path>
-                    <fileset refid="jmx.files" />
-                </path>
-            </foreach>
+    <!-- Run all JMX files in parallel -->
+    <target name="run-tests" depends="init">
+        <parallel threadCount="4" failonany="true">
+            <fileset dir="Test Plans" includes="*.jmx">
+                <sequential>
+                    <jmeter testplan="@{filename}"
+                            resultlog="${jmeter.results.dir}/@{basename}.jtl" />
+                </sequential>
+            </fileset>
         </parallel>
     </target>
 
-    <!-- Execute a single JMX -->
-    <target name="run-single">
-        <echo message="Running @{file}" />
-        <exec executable="${jmeter.home}\bin\jmeter.bat">
-            <arg value="-n" />
-            <arg value="-t" />
-            <arg value="@{file}" />
-            <arg value="-l" />
-            <arg value="${results.dir}\${basename:@{file}}.jtl" />
-        </exec>
-    </target>
-
-    <!-- Generate consolidated HTML report -->
+    <!-- Generate consolidated report -->
     <target name="report" depends="run-tests">
-        <mkdir dir="${report.dir}" />
-        <exec executable="${jmeter.home}\bin\jmeter.bat">
-            <arg value="-g" />
-            <arg value="${results.dir}" />
-            <arg value="-o" />
-            <arg value="${report.dir}" />
-        </exec>
+        <java classname="org.apache.jmeter.report.dashboard.ReportGenerator" fork="true">
+            <classpath refid="jmeter.classpath" />
+            <arg line="-o ${jmeter.report.dir}" />
+            <arg line="-g ${jmeter.results.dir}/*.jtl" />
+        </java>
     </target>
-
 </project>
