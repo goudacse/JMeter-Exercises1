@@ -7,17 +7,10 @@
     </target>
 
     <target name="run-all" depends="init">
-        <echo message="Running all JMeter tests using batch script..."/>
+        <echo message="Running all JMeter tests via batch script..."/>
         <exec executable="cmd">
             <arg line="/c run-jmeter-parallel.bat"/>
         </exec>
-    </target>
-
-    <target name="combine-results" depends="run-all">
-        <echo message="Combining all JTL files..."/>
-        <concat destfile="${report.dir}\combined.jtl">
-            <fileset dir="${report.dir}" includes="*.jtl"/>
-        </concat>
     </target>
 
 </project>
