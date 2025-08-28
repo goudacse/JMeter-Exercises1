@@ -1,54 +1,44 @@
-<project name="JMeter-Parallel-Run" default="run" basedir=".">
-    <property name="jmeter.home" value="/opt/apache-jmeter" /> 
-    <property name="results.dir" value="results" />
+<project name="JMeter-Ant-Parallel" default="report" basedir=".">
+    <!-- JMeter installation path -->
+    <property name="jmeter.home" value="/opt/apache-jmeter" />
+    <property name="jmeter.bin" value="${jmeter.home}/bin" />
+    <property name="jmeter.results.dir" value="build/jmeter-results" />
+    <property name="jmeter.report.dir" value="build/jmeter-html-report" />
 
-    <target name="run">
-        <parallel threadCount="4"> 
-            <sequential>
-                <exec executable="${jmeter.home}/bin/jmeter">
-                    <arg value="-n"/>
-                    <arg value="-t"/>
-                    <arg value="Test Plans/PetStore-End-to-End-Flow.jmx"/>
-                    <arg value="-l"/>
-                    <arg value="${results.dir}/EndToEnd.jtl"/>
-                </exec>
-            </sequential>
-            <sequential>
-                <exec executable="${jmeter.home}/bin/jmeter">
-                    <arg value="-n"/>
-                    <arg value="-t"/>
-                    <arg value="Test Plans/PetStore-Test-Plan-Add-All-Products.jmx"/>
-                    <arg value="-l"/>
-                    <arg value="${results.dir}/AddProducts.jtl"/>
-                </exec>
-            </sequential>
-            <sequential>
-                <exec executable="${jmeter.home}/bin/jmeter">
-                    <arg value="-n"/>
-                    <arg value="-t"/>
-                    <arg value="Test Plans/PetStore_AddNewPET.jmx"/>
-                    <arg value="-l"/>
-                    <arg value="${results.dir}/AddPet.jtl"/>
-                </exec>
-            </sequential>
-            <sequential>
-                <exec executable="${jmeter.home}/bin/jmeter">
-                    <arg value="-n"/>
-                    <arg value="-t"/>
-                    <arg value="Test Plans/PetStore_AddNewUser.jmx"/>
-                    <arg value="-l"/>
-                    <arg value="${results.dir}/AddUser.jtl"/>
-                </exec>
-            </sequential>
+    <!-- JMeter jars -->
+    <path id="jmeter.classpath">
+        <fileset dir="${jmeter.home}/lib" includes="**/*.jar"/>
+        <fileset dir="${jmeter.home}/lib/ext" includes="**/*.jar"/>
+    </path>
+
+    <taskdef name="jmeter" 
+             classname="org.apache.jorphan.ant.JMeterTask" 
+             classpathref="jmeter.classpath" />
+
+    <!-- Prepare folders -->
+    <target name="init">
+        <mkdir dir="${jmeter.results.dir}" />
+        <mkdir dir="${jmeter.report.dir}" />
+    </target>
+
+    <!-- Run all JMX files in parallel -->
+    <target name="run-tests" depends="init">
+        <parallel threadCount="4" failonany="true">
+            <fileset dir="Test Plans" includes="*.jmx">
+                <sequential>
+                    <jmeter testplan="@{filename}"
+                            resultlog="${jmeter.results.dir}/@{basename}.jtl" />
+                </sequential>
+            </fileset>
         </parallel>
     </target>
 
-    <target name="report">
-        <exec executable="${jmeter.home}/bin/jmeter">
-            <arg value="-g"/>
-            <arg value="${results.dir}/merged.jtl"/>
-            <arg value="-o"/>
-            <arg value="${results.dir}/combined-report"/>
-        </exec>
+    <!-- Generate consolidated report -->
+    <target name="report" depends="run-tests">
+        <java classname="org.apache.jmeter.report.dashboard.ReportGenerator" fork="true">
+            <classpath refid="jmeter.classpath" />
+            <arg line="-o ${jmeter.report.dir}" />
+            <arg line="-g ${jmeter.results.dir}/*.jtl" />
+        </java>
     </target>
 </project>
