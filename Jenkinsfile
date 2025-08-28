@@ -17,7 +17,7 @@ pipeline {
         stage('Run JMeter Parallel Tests') {
             steps {
                 // Run Ant build.xml target to execute all JMX files in parallel
-                bat "ant -f build.xml report"
+                bat 'ant -f build.xml combine-results'
             }
         }
 
