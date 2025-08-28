@@ -7,7 +7,7 @@
 
     <!-- JMeter jars -->
     <path id="jmeter.classpath">
-        <fileset dir=D:/JMeter/apache-jmeter-5.6.3/apache-jmeter-5.6.3/lib" includes="**/*.jar"/>
+        <fileset dir="D:/JMeter/apache-jmeter-5.6.3/apache-jmeter-5.6.3/lib" includes="**/*.jar"/>
         <fileset dir="D:/JMeter/apache-jmeter-5.6.3/apache-jmeter-5.6.3/lib/ext" includes="**/*.jar"/>
     </path>
 
