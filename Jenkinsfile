@@ -1,8 +1,8 @@
-  pipeline {
+pipeline {
     agent any
 
     environment {
-        JMETER_HOME = 'D:\\JMeter\\apache-jmeter-5.6.3' // Update JMeter path
+        JMETER_HOME = 'D:\\JMeter\\apache-jmeter-5.6.3'
         REPORT_DIR = 'jmeter-report'
     }
 
@@ -33,9 +33,13 @@
         stage('Generate Combined HTML Report') {
             steps {
                 bat """
-                copy /b %REPORT_DIR%\\*.jtl %REPORT_DIR%\\combined.jtl
-                if not exist %REPORT_DIR%\\html\\combined mkdir %REPORT_DIR%\\html\\combined
-                %JMETER_HOME%\\bin\\jmeter.bat -g %REPORT_DIR%\\combined.jtl -o %REPORT_DIR%\\html\\combined
+                if exist %REPORT_DIR%\\combined.jtl (
+                    if not exist %REPORT_DIR%\\html\\combined mkdir %REPORT_DIR%\\html\\combined
+                    %JMETER_HOME%\\bin\\jmeter.bat -g %REPORT_DIR%\\combined.jtl -o %REPORT_DIR%\\html\\combined
+                ) else (
+                    echo ERROR: combined.jtl not found
+                    exit /b 1
+                )
                 """
             }
         }
