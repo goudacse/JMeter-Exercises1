@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set JMETER_HOME=C:\apache-jmeter-5.6.3
+set JMETER_HOME=D:\\JMeter\\apache-jmeter-5.6.3
 set TEST_DIR=jmeter-tests
 set REPORT_DIR=jmeter-report
 
