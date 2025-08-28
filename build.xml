@@ -1,0 +1,54 @@
+<project name="JMeter-Parallel-Run" default="run" basedir=".">
+    <property name="jmeter.home" value="/opt/apache-jmeter" /> 
+    <property name="results.dir" value="results" />
+
+    <target name="run">
+        <parallel threadCount="4"> 
+            <sequential>
+                <exec executable="${jmeter.home}/bin/jmeter">
+                    <arg value="-n"/>
+                    <arg value="-t"/>
+                    <arg value="Test Plans/PetStore-End-to-End-Flow.jmx"/>
+                    <arg value="-l"/>
+                    <arg value="${results.dir}/EndToEnd.jtl"/>
+                </exec>
+            </sequential>
+            <sequential>
+                <exec executable="${jmeter.home}/bin/jmeter">
+                    <arg value="-n"/>
+                    <arg value="-t"/>
+                    <arg value="Test Plans/PetStore-Test-Plan-Add-All-Products.jmx"/>
+                    <arg value="-l"/>
+                    <arg value="${results.dir}/AddProducts.jtl"/>
+                </exec>
+            </sequential>
+            <sequential>
+                <exec executable="${jmeter.home}/bin/jmeter">
+                    <arg value="-n"/>
+                    <arg value="-t"/>
+                    <arg value="Test Plans/PetStore_AddNewPET.jmx"/>
+                    <arg value="-l"/>
+                    <arg value="${results.dir}/AddPet.jtl"/>
+                </exec>
+            </sequential>
+            <sequential>
+                <exec executable="${jmeter.home}/bin/jmeter">
+                    <arg value="-n"/>
+                    <arg value="-t"/>
+                    <arg value="Test Plans/PetStore_AddNewUser.jmx"/>
+                    <arg value="-l"/>
+                    <arg value="${results.dir}/AddUser.jtl"/>
+                </exec>
+            </sequential>
+        </parallel>
+    </target>
+
+    <target name="report">
+        <exec executable="${jmeter.home}/bin/jmeter">
+            <arg value="-g"/>
+            <arg value="${results.dir}/merged.jtl"/>
+            <arg value="-o"/>
+            <arg value="${results.dir}/combined-report"/>
+        </exec>
+    </target>
+</project>
