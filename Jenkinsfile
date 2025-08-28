@@ -3,7 +3,6 @@ pipeline {
 
     tools {
         ant 'Ant 1.10'   // Install Ant in Jenkins Global Tools
-        jdk 'Java 11'   // JMeter needs Java
     }
 
     stages {
