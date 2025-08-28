@@ -20,6 +20,15 @@ pipeline {
                 bat 'ant -f build.xml combine-results'
             }
         }
+        stage('Generate Combined HTML Report') {
+            steps {
+                // Generate HTML report from combined JTL
+                bat """
+                if not exist jmeter-report\\html mkdir jmeter-report\\html
+                %JMETER_HOME%\\bin\\jmeter.bat -g jmeter-report\\combined.jtl -o jmeter-report\\html\\combined
+                """
+            }
+        }
 
         stage('Publish HTML Report') {
             steps {
