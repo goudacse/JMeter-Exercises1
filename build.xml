@@ -1,14 +1,14 @@
 <project name="JMeter-Ant-Parallel" default="report" basedir=".">
     <!-- JMeter installation path -->
     <property name="jmeter.home" value="/opt/apache-jmeter" />
-    <property name="jmeter.bin" value="${jmeter.home}/bin" />
+    <property name="jmeter.bin" value="D:/JMeter/apache-jmeter-5.6.3/apache-jmeter-5.6.3/bin" />
     <property name="jmeter.results.dir" value="build/jmeter-results" />
     <property name="jmeter.report.dir" value="build/jmeter-html-report" />
 
     <!-- JMeter jars -->
     <path id="jmeter.classpath">
-        <fileset dir="${jmeter.home}/lib" includes="**/*.jar"/>
-        <fileset dir="${jmeter.home}/lib/ext" includes="**/*.jar"/>
+        <fileset dir=D:/JMeter/apache-jmeter-5.6.3/apache-jmeter-5.6.3/lib" includes="**/*.jar"/>
+        <fileset dir="D:/JMeter/apache-jmeter-5.6.3/apache-jmeter-5.6.3/lib/ext" includes="**/*.jar"/>
     </path>
 
     <taskdef name="jmeter" 
