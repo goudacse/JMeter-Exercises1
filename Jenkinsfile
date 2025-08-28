@@ -1,50 +1,69 @@
 pipeline {
     agent any
 
-    tools {
-        ant 'Ant 1.10'   // Install Ant in Jenkins Global Tools
+    environment {
+        JMETER_HOME = 'D:\\JMeter\\apache-jmeter-5.6.3' // Update your JMeter path
+        TEST_DIR = 'jmeter-tests'
+        REPORT_DIR = 'jmeter-report'
     }
-     environment {
-        JMETER_HOME = 'D:\\JMeter\\apache-jmeter-5.6.3'  // set your JMeter path
-    }
-
 
     stages {
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
-                // Explicitly use main branch
-                git branch: 'main', 
-                    url: 'https://github.com/goudacse/JMeter-Exercises1.git'
+                checkout scm
             }
         }
 
-        stage('Run JMeter Parallel Tests') {
+        stage('Run JMeter Tests in Parallel') {
             steps {
-                // Run Ant build.xml target to execute all JMX files in parallel
-                bat 'ant -f build.xml combine-results'
+                bat 'ant -f build.xml run-all'
+                // Wait for all tests to finish (optional: adjust based on test duration)
+                bat 'timeout /t 10 > nul'
             }
         }
-        stage('Generate Combined HTML Report') {
+
+        stage('Generate Individual HTML Reports') {
             steps {
-                // Generate HTML report from combined JTL
                 bat """
-                if not exist jmeter-report\\html mkdir jmeter-report\\html
-                %JMETER_HOME%\\bin\\jmeter.bat -g jmeter-report\\combined.jtl -o jmeter-report\\html\\combined
+                for %%f in (%REPORT_DIR%\\*.jtl) do (
+                    if not exist %REPORT_DIR%\\html\\%%~nf mkdir %REPORT_DIR%\\html\\%%~nf
+                    %JMETER_HOME%\\bin\\jmeter.bat -g %%f -o %REPORT_DIR%\\html\\%%~nf
+                )
                 """
             }
         }
 
-        stage('Publish HTML Report') {
+        stage('Generate Combined HTML Report') {
             steps {
-                // Correct parameters for publishHTML plugin
-                publishHTML([
-                    reportDir: 'build/jmeter-html-report',
+                bat """
+                copy /b %REPORT_DIR%\\*.jtl %REPORT_DIR%\\combined.jtl
+                if not exist %REPORT_DIR%\\html\\combined mkdir %REPORT_DIR%\\html\\combined
+                %JMETER_HOME%\\bin\\jmeter.bat -g %REPORT_DIR%\\combined.jtl -o %REPORT_DIR%\\html\\combined
+                """
+            }
+        }
+
+        stage('Publish HTML Reports') {
+            steps {
+                // Publish combined report
+                publishHTML(target: [
+                    reportDir: '%REPORT_DIR%/html/combined',
                     reportFiles: 'index.html',
-                    reportName: 'JMeter Parallel Test Report',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: true
+                    reportName: 'Combined JMeter Report'
                 ])
+
+                // Publish individual reports
+                script {
+                    def htmlFolders = findFiles(glob: "${env.REPORT_DIR}/html/*/index.html")
+                    for (file in htmlFolders) {
+                        def reportName = file.path.split("/").last().replace("index.html","").replace("\\","")
+                        publishHTML(target: [
+                            reportDir: file.path.replace("index.html",""),
+                            reportFiles: 'index.html',
+                            reportName: "JMeter Report - ${reportName}"
+                        ])
+                    }
+                }
             }
         }
     }
