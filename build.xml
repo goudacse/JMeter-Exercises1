@@ -1,6 +1,6 @@
-<project name="JMeterTests" default="run-all-parallel" basedir=".">
+<project name="JMeterTests" default="run-all" basedir=".">
 
-    <!-- JMETER_HOME from environment -->
+    <!-- Environment -->
     <property name="jmeter.home" value="${env.JMETER_HOME}"/>
     <property name="test.plan.dir" value="jmeter-tests"/>
     <property name="report.dir" value="jmeter-report"/>
@@ -10,31 +10,17 @@
         <mkdir dir="${report.dir}"/>
     </target>
 
-    <!-- Run all JMX files in parallel -->
-    <target name="run-all-parallel" depends="init">
+    <!-- Run all JMX files in parallel using Windows batch for loop -->
+    <target name="run-all" depends="init">
         <echo message="Running all JMeter tests in parallel..."/>
-
-        <parallel threadCount="10" timeout="0">
-            <fileset dir="${test.plan.dir}" includes="*.jmx">
-                <foreach param="testfile">
-                    <sequential>
-                        <echo message="Starting ${testfile}..."/>
-                        <exec executable="${jmeter.home}\bin\jmeter.bat" spawn="true" failonerror="true">
-                            <arg value="-n"/>
-                            <arg value="-t"/>
-                            <arg value="${test.plan.dir}\${testfile}"/>
-                            <arg value="-l"/>
-                            <arg value="${report.dir}\${testfile}.jtl"/>
-                        </exec>
-                    </sequential>
-                </foreach>
-            </fileset>
-        </parallel>
+        <exec executable="cmd">
+            <arg line="/c for %%f in (${test.plan.dir}\*.jmx) do start /B cmd /c &quot;%jmeter.home%\bin\jmeter.bat -n -t %%f -l ${report.dir}\%%~nf.jtl&quot;"/>
+        </exec>
     </target>
 
-    <!-- Combine all JTL files into one -->
-    <target name="combine-results" depends="run-all-parallel">
-        <echo message="Combining all JTL results..."/>
+    <!-- Combine all JTL files -->
+    <target name="combine-results" depends="run-all">
+        <echo message="Combining all JTL files..."/>
         <concat destfile="${report.dir}\combined.jtl">
             <fileset dir="${report.dir}" includes="*.jtl"/>
         </concat>
